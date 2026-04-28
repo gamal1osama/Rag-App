@@ -37,8 +37,6 @@ async def upload_data(project_id: str, file: UploadFile, app_settings: Settings 
         )
     
     # Save the file to the specified directory
-    project_controller = ProjectController()
-    project_dir_path = project_controller.get_project_path(project_id=project_id)
     file_path = data_controller.generate_unique_filename_path(original_filename=file.filename, project_id=project_id)
 
     try:
