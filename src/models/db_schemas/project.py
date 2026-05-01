@@ -17,6 +17,18 @@ class Project(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: lambda x: str(x)
-        }
+        
+    
+    @classmethod
+    def get_indices(cls):
+        
+        return [
+            {
+                "key": [
+                    ("project_id", 1),
+                ],
+                "name": "project_id_index_1",
+                "unique": True,
+            }
+        ]
+    

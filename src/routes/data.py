@@ -4,8 +4,9 @@ import logging
 
 from helpers.config import get_settings, Settings
 from controllers import DataController, ProcessController
-from models import ResponseSignal, ProjectModel, ChunkModel
-from models.db_schemas import DataChunk
+from models import ResponseSignal, ProjectModel, ChunkModel, AssetModel
+from models.db_schemas import DataChunk, Asset
+from models.enums import AssetTypeEnum
 from .schemas.data import ProcessRequest
 
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
@@ -27,7 +28,7 @@ data_router = APIRouter(
 async def upload_data(request: Request, project_id: str, file: UploadFile, 
                       app_settings: Settings = Depends(get_settings)):
     
-    project_model = ProjectModel(db_client=request.app.db_client)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     project = await project_model.get_project_or_create(project_id=project_id)
 
 
@@ -59,12 +60,26 @@ async def upload_data(request: Request, project_id: str, file: UploadFile,
                 "signal":ResponseSignal.FILE_UPLOAD_FAILED.value,
             }
         )
+    
+
+
+    # store the assets into the database
+    asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
+
+    asset_resource = Asset(
+        asset_project_id = project.id,
+        asset_type=AssetTypeEnum.FILE.value,
+        asset_name=file_id,
+        asset_size=os.path.getsize(file_path)
+    )
+
+    assert_record = await asset_model.create_asset(asset=asset_resource)
 
     return JSONResponse(
         status_code=status.HTTP_200_OK, # that is the default U can delete it
         content={
             "signal":ResponseSignal.FILE_UPLOADED_SUCCESSFULLY.value,
-            "file_id": file_id
+            "file_id": str(assert_record.id),
         }
     )
 
@@ -77,7 +92,7 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
     chunk_overlap = process_request.chunk_overlap
     do_reset = process_request.do_reset
 
-    project_model = ProjectModel(db_client=request.app.db_client)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     project = await project_model.get_project_or_create(project_id=project_id)
 
 
@@ -107,7 +122,7 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
         ) for index, chunk in enumerate(chunks, start=1)
     ]
 
-    chunk_model = ChunkModel(db_client=request.app.db_client)
+    chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
 
     if do_reset==1:
         await chunk_model.delete_chunks_by_project_id(project_id=project.id)
