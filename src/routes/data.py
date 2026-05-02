@@ -96,14 +96,33 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
 
 
 
+    asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
+    project_files_ids = {}
 
-    project_files_ids = []
     if process_request.file_id is not None:
-        project_files_ids.append(process_request.file_id)
+        asset_record = await asset_model.get_asset_record(
+            asset_project_id=project.id, asset_name=process_request.file_id
+        )
+
+        if asset_record is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "signal":ResponseSignal.FILE_WITH_THIS_ID_NOT_FOUND_ERROR.value,
+                }
+            )
+        
+        project_files_ids = {
+            asset_record.id : asset_record.asset_name
+        }
+
+
     else:
-        asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         project_assets = await asset_model.get_all_project_assets(asset_project_id=project.id, asset_type=AssetTypeEnum.FILE.value)
-        project_files_ids = [str(asset.asset_name) for asset in project_assets]
+        
+        project_files_ids = {
+            asset.id : str(asset.asset_name) for asset in project_assets
+            }
 
 
     if len(project_files_ids) == 0:
@@ -128,7 +147,7 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
 
 
     no_records, no_files = 0, 0
-    for file_id in project_files_ids:
+    for asset_id, file_id in project_files_ids.items():
 
         file_content = process_controller.get_file_content(file_id=file_id)
         if file_content is None:
@@ -151,7 +170,8 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
                 chunk_text=chunk.page_content,
                 chunk_metadata=chunk.metadata,
                 chunk_order=index,
-                chunk_project_id=project.id
+                chunk_project_id=project.id,
+                chunk_asset_id=asset_id
             ) for index, chunk in enumerate(chunks, start=1)
         ]
 
