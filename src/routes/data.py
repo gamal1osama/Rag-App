@@ -103,7 +103,7 @@ async def process_endpoint(request: Request, project_id: str, process_request: P
     else:
         asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         project_assets = await asset_model.get_all_project_assets(asset_project_id=project.id, asset_type=AssetTypeEnum.FILE.value)
-        project_files_ids = [str(asset["asset_name"]) for asset in project_assets]
+        project_files_ids = [str(asset.asset_name) for asset in project_assets]
 
 
     if len(project_files_ids) == 0:
