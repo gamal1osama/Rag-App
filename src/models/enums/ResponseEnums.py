@@ -15,3 +15,4 @@ class ResponseSignal(Enum):
     FILE_PROCESSING_FAILED = "file_processing_failed"
     FILE_PROCESSING_SUCCESS = "file_processing_success"
     
+    NO_FILES_TO_PROCESS_ERROR = "no_files_to_process_error"
