@@ -24,6 +24,10 @@ class ProcessController(BaseController):
         file_ext = self.get_file_extension(file_id)
         file_path = os.path.join(self.project_path, file_id)
 
+        if not os.path.exists(file_path):
+            print(f"Warning: File with id {file_id} not found in project {self.project_id}")
+            return None
+
         if file_ext == ProcessingEnums.TXT.value:
             return TextLoader(file_path=file_path, encoding='utf-8') # we use utf-8 encoding because if the file contain arabic caracters
         
@@ -35,7 +39,10 @@ class ProcessController(BaseController):
     def get_file_content(self, file_id: str) -> str:
         loader = self.get_file_loader(file_id)
 
-        return loader.load()
+        if loader is not None:
+            return loader.load()
+        
+        return None
     
     def split_file_content(self, file_content: list,
                            chunk_size: int = 100, chunk_overlap: int = 20):
