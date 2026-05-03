@@ -38,7 +38,7 @@ class OpenAIProvider(LLMInterface):
         self.generation_model_id = model_id
 
 
-    def set_embedding_model(self, model_id: str, embedding_size: int):
+    def set_embedding_model(self, model_id: str, embedding_size: int=None):
         self.embedding_model_id = model_id
         self.embedding_size = embedding_size
 
@@ -88,6 +88,7 @@ class OpenAIProvider(LLMInterface):
         response = self.client.embeddings.create(
             input=text,
             model=self.embedding_model_id,
+            dimensions=self.embedding_size
         )
 
         if not response or not response.data or len(response.data) == 0 or not response.data[0].embedding:
