@@ -9,7 +9,7 @@ class LLMInterface(ABC):
 
     
     @abstractmethod
-    def set_embedding_model(self, model_id: str, embedding_size: int):
+    def set_embedding_model(self, model_id: str, embedding_size: int=None):
         pass
 
 
