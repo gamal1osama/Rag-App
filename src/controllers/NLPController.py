@@ -39,8 +39,8 @@ class NLPController(BaseController):
 
 
         # step 2: manage items
-        texts = [chunk.text for chunk in chunks]
-        metadatas = [chunk.metadata for chunk in chunks]
+        texts = [chunk.chunk_text for chunk in chunks]
+        metadatas = [chunk.chunk_metadata for chunk in chunks]
 
         vectors = [
             self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.DOCUMENT.value) 
