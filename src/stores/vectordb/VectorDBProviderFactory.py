@@ -1,6 +1,6 @@
 from .providers import QdrantDBProvider
 from .VectoDBEnums import VectorDBEnums, DistanceMethodEnums
-from ...controllers.BaseController import BaseController
+from controllers.BaseController import BaseController
 
 
 class VectorDBProviderFactory:
