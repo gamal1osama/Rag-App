@@ -5,6 +5,7 @@ from ..VectoDBEnums import DistanceMethodEnums
 
 import logging
 from typing import List
+from uuid import UUID, uuid4, uuid5, NAMESPACE_URL
 
 
 
@@ -106,7 +107,18 @@ class QdrantDBProvider(VectorDBInterface):
             metadatas = [None] * len(texts)
 
         if record_ids is None:
-            record_ids = [str(record_id) for record_id in range(0, len(texts))]
+            record_ids = [str(uuid4()) for _ in range(0, len(texts))]
+        else:
+            normalized_ids = []
+            for record_id in record_ids:
+                record_id = str(record_id)
+                try:
+                    _ = UUID(record_id)
+                except :
+                    record_id = str(uuid5(NAMESPACE_URL, record_id))
+                normalized_ids.append(record_id)
+                
+            record_ids = normalized_ids
 
         
         for i in range(0, len(texts), batch_size):
