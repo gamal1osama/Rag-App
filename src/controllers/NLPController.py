@@ -32,7 +32,7 @@ class NLPController(BaseController):
         return collection_info
         
 
-    def index_into_db(self, project: Project, chunks: List[DataChunk], do_reset: bool = False):
+    def index_into_db(self, project: Project, chunks: List[DataChunk], do_reset: bool = False, chunks_ids: List[str] = None) -> bool:
         
         # step 1: get collection name
         collection_name = self.create_collection_name(project_id=project.project_id)
@@ -60,7 +60,8 @@ class NLPController(BaseController):
             collection_name=collection_name,
             texts=texts, 
             vectors=vectors, 
-            metadatas=metadatas
+            metadatas=metadatas,
+            record_ids=chunks_ids
         )
 
 

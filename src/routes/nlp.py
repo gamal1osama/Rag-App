@@ -49,7 +49,7 @@ async def index_project(project_id: str, request: Request, push_request: PushReq
 
     chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
     
-    has_records, page_no, inserted_items_cnt = True, 1, 0
+    has_records, page_no, inserted_items_cnt, idx = True, 1, 0, 0
     while has_records:
         page_chunks = await chunk_model.get_project_chunks(
             project_id=project.id, 
@@ -62,10 +62,14 @@ async def index_project(project_id: str, request: Request, push_request: PushReq
         elif not page_chunks or len(page_chunks) == 0:
             has_records = False
 
+        chunks_ids = [str(chunk_id) for chunk_id in range(idx, idx + len(page_chunks))]
+        idx += len(page_chunks)
+
         is_inserted = nlp_controller.index_into_db(
             project=project,
             chunks=page_chunks,
-            do_reset=push_request.do_reset
+            do_reset=push_request.do_reset,
+            chunks_ids=chunks_ids
         )
         if not is_inserted:
             return JSONResponse(

@@ -106,7 +106,7 @@ class QdrantDBProvider(VectorDBInterface):
             metadatas = [None] * len(texts)
 
         if record_ids is None:
-            record_ids = [None] * len(texts)
+            record_ids = [str(record_id) for record_id in range(0, len(texts))]
 
         
         for i in range(0, len(texts), batch_size):
