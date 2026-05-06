@@ -88,3 +88,27 @@ async def index_project(project_id: str, request: Request, push_request: PushReq
             "inserted_items_count": inserted_items_cnt
         }
     )
+
+
+@nlp_router.get("/index/info/{project_id}")
+async def get_project_index_info(project_id: str, request: Request):
+    
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
+    project = await project_model.get_project_or_create(project_id=project_id)
+
+
+    nlp_controller = NLPController(
+        vector_db_client=request.app.vector_db_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client
+    )    
+
+
+    collection_info = nlp_controller.get_vector_db_collection_info(project=project)
+
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.GETTING_VECTOR_DB_COLLECTION_INFO_SUCCESS.value,
+            "collection_info": collection_info
+        }
+    )

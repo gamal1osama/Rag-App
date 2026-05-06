@@ -23,4 +23,5 @@ class ResponseSignal(Enum):
 
     INSERTING_CHUNKS_INTO_DB_FAILED = "inserting_chunks_into_db_failed"
     INSERTING_CHUNKS_INTO_DB_SUCCESS = "inserting_chunks_into_db_success"
-    
+
+    GETTING_VECTOR_DB_COLLECTION_INFO_SUCCESS = "getting_vector_db_collection_info_success"
