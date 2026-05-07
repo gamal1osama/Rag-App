@@ -25,3 +25,6 @@ class ResponseSignal(Enum):
     INSERTING_CHUNKS_INTO_DB_SUCCESS = "inserting_chunks_into_db_success"
 
     GETTING_VECTOR_DB_COLLECTION_INFO_SUCCESS = "getting_vector_db_collection_info_success"
+
+    SEARCHING_VECTOR_DB_COLLECTION_FAILED = "searching_vector_db_collection_failed"
+    SEARCHING_VECTOR_DB_COLLECTION_SUCCESS = "searching_vector_db_collection_success"
