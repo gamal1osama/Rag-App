@@ -151,3 +151,41 @@ async def search_index(project_id: str, request: Request, search_request: Search
             "results": [result.dict() for result in results]
         }
     )
+
+
+@nlp_router.post("/index/answer/{project_id}")
+async def answer_query(project_id: str, request: Request, search_request: SearchRequest):
+    
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
+    project = await project_model.get_project_or_create(project_id=project_id)
+
+    nlp_controller = NLPController(
+        vector_db_client=request.app.vector_db_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser
+    )
+
+
+    answer, full_prompt, chat_history = nlp_controller.answer_rag_query(
+        project=project,
+        query=search_request.text,
+        limit=search_request.limit
+    )
+
+    if not answer:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            content={
+                "signal": ResponseSignal.ANSWERING_RAG_QUERY_FAILED.value
+            }
+        )
+    
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.ANSWERING_RAG_QUERY_SUCCESS.value,
+            "answer": answer,
+            "full_prompt": full_prompt,
+            "chats": chat_history
+        }
+    )

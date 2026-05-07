@@ -28,3 +28,7 @@ class ResponseSignal(Enum):
 
     SEARCHING_VECTOR_DB_COLLECTION_FAILED = "searching_vector_db_collection_failed"
     SEARCHING_VECTOR_DB_COLLECTION_SUCCESS = "searching_vector_db_collection_success"
+
+    ANSWERING_RAG_QUERY_FAILED = "answering_rag_query_failed"
+    ANSWERING_RAG_QUERY_SUCCESS = "answering_rag_query_success"
+    
