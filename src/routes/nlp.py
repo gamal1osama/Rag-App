@@ -186,6 +186,6 @@ async def answer_query(project_id: str, request: Request, search_request: Search
             "signal": ResponseSignal.ANSWERING_RAG_QUERY_SUCCESS.value,
             "answer": answer,
             "full_prompt": full_prompt,
-            "chats": chat_history
+            "chat_history": chat_history
         }
     )
