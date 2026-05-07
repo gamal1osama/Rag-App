@@ -95,6 +95,4 @@ class NLPController(BaseController):
             return False
 
 
-        return json.loads(
-            json.dumps(search_results, default=lambda x: x.__dict__)
-        )
+        return search_results

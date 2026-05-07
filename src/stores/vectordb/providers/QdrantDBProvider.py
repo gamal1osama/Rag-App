@@ -2,6 +2,7 @@ from qdrant_client import QdrantClient, models
 
 from ..VectorDBInterface import VectorDBInterface
 from ..VectoDBEnums import DistanceMethodEnums
+from models.db_schemas import RetrievedDataChunk
 
 import logging
 from typing import List
@@ -153,7 +154,7 @@ class QdrantDBProvider(VectorDBInterface):
 
     def search_by_vector(self, collection_name: str,
                          query_vector: List[float], 
-                         limit: int = 10) -> List[dict]:
+                         limit: int = 10) -> List[RetrievedDataChunk]:
         if not self.is_collection_exists(collection_name):
             self.logger.error("Can't search in non-existing collection!")
             return []
@@ -164,7 +165,17 @@ class QdrantDBProvider(VectorDBInterface):
             collection_name=collection_name,
             query=query_vector,
             limit=limit
-        )
+        ).points
         
-        return results.points
+        if not results or len(results) == 0:
+            return []
+        
+        return [
+            RetrievedDataChunk(
+                text=result.payload["text"],
+                score=result.score
+            )
+            for result in results
+        ]
+
 
