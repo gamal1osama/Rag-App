@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
-from .schemas.nlp import PushRequest
+from .schemas.nlp import PushRequest, SearchRequest
 from models import ProjectModel, ChunkModel, ResponseSignal
 from controllers import NLPController
 
@@ -59,8 +59,9 @@ async def index_project(project_id: str, request: Request, push_request: PushReq
 
         if len(page_chunks):
             page_no += 1
-        elif not page_chunks or len(page_chunks) == 0:
+        else:
             has_records = False
+            break
 
         chunks_ids = [str(chunk_id) for chunk_id in range(idx, idx + len(page_chunks))]
         idx += len(page_chunks)
@@ -110,5 +111,40 @@ async def get_project_index_info(project_id: str, request: Request):
         content={
             "signal": ResponseSignal.GETTING_VECTOR_DB_COLLECTION_INFO_SUCCESS.value,
             "collection_info": collection_info
+        }
+    )
+
+
+@nlp_router.post("/index/search/{project_id}")
+async def search_index(project_id: str, request: Request, search_request: SearchRequest):
+    
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
+    project = await project_model.get_project_or_create(project_id=project_id)
+
+
+    nlp_controller = NLPController(
+        vector_db_client=request.app.vector_db_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client
+    )    
+
+    results = nlp_controller.search_vector_db_collection(
+        project=project,
+        text=search_request.text,
+        limit=search_request.limit
+    )
+
+    if results is False:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            content={
+                "signal": ResponseSignal.SEARCHING_VECTOR_DB_COLLECTION_FAILED.value
+            }
+        )
+    
+    return JSONResponse(
+        content={
+            "signal": ResponseSignal.SEARCHING_VECTOR_DB_COLLECTION_SUCCESS.value,
+            "results": results
         }
     )
