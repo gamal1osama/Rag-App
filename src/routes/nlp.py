@@ -134,7 +134,7 @@ async def search_index(project_id: str, request: Request, search_request: Search
         limit=search_request.limit
     )
 
-    if results is False:
+    if not results:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             content={

@@ -75,15 +75,15 @@ class NLPController(BaseController):
     def search_vector_db_collection(self,
                                     project: Project,
                                     text: str,
-                                    limit: int = 10,):
+                                    limit: int = 10):
 
         # step1: get collection name
         collection_name = self.create_collection_name(project_id=project.project_id)
 
         # step2: get the text embedding vector
         query_vector = self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
-        if not query_vector or len(query_vector) == 0:
-            return False 
+        if not query_vector:
+            return None
 
         # step3: do semantic search
         search_results = self.vector_db_client.search_by_vector(
@@ -92,7 +92,31 @@ class NLPController(BaseController):
             limit=limit
         )
         if not search_results:
-            return False
+            return None
 
 
         return search_results
+
+
+    def answer_rag_query(self, project: Project, query: str, limit: int = 10):
+        
+        # step1: retrieve related chunks from vector db
+        retrieved_chunks = self.search_vector_db_collection(
+            project=project,
+            text=query,
+            limit=limit
+        )
+
+        if not retrieved_chunks:
+            return None
+
+
+        # step2: construct prompt for generation client (LLM)
+        system_prompt = """
+            You are an assistant to generate a response for the user.
+
+            You will be provided by a set of documents associated with the user's query.
+
+            You have to generate a response based on the documents provided. Ignore the documents that are not relevant to the user's query.    
+        
+        """
