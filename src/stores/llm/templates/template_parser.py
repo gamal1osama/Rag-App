@@ -21,7 +21,7 @@ class TemplateParser:
             self.language = self.default_language
 
 
-    def get_variables(self, group: str, key: str, vars: dict={}):
+    def get_prompts(self, group: str, key: str, vars: dict={}):
         if not group or not key:
             return None
         
