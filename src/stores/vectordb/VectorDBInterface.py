@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
+from models.db_schemas import RetrievedDataChunk
+
 
 class VectorDBInterface(ABC):
 
@@ -53,6 +55,6 @@ class VectorDBInterface(ABC):
     @abstractmethod
     def search_by_vector(self, collection_name: str,
                          query_vector: List[float], 
-                         limit: int = 10) -> List[dict]:
+                         limit: int = 10) -> List[RetrievedDataChunk]:
         pass
     

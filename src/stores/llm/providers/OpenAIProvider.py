@@ -27,10 +27,15 @@ class OpenAIProvider(LLMInterface):
         self.embedding_model_id = None
         self.embedding_size = None
 
-        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.client = OpenAI(
+            api_key=self.api_key, 
+            base_url=self.base_url if (self.base_url and len(self.base_url)) else None
+        )
 
         self.logger = logging.getLogger(__name__)
 
+        self.enums = OpenAIEnums
+        
 
 
 

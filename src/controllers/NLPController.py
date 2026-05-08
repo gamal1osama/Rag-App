@@ -9,12 +9,13 @@ import json
 
 class NLPController(BaseController):
 
-    def __init__(self, vector_db_client, generation_client, embedding_client):
+    def __init__(self, vector_db_client, generation_client, embedding_client, template_parser):
         super().__init__()
 
         self.vector_db_client = vector_db_client
         self.generation_client = generation_client
         self.embedding_client = embedding_client
+        self.template_parser = template_parser
 
     
     def create_collection_name(self, project_id: str) -> str:
@@ -75,15 +76,15 @@ class NLPController(BaseController):
     def search_vector_db_collection(self,
                                     project: Project,
                                     text: str,
-                                    limit: int = 10,):
+                                    limit: int = 10):
 
         # step1: get collection name
         collection_name = self.create_collection_name(project_id=project.project_id)
 
         # step2: get the text embedding vector
         query_vector = self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
-        if not query_vector or len(query_vector) == 0:
-            return False 
+        if not query_vector:
+            return None
 
         # step3: do semantic search
         search_results = self.vector_db_client.search_by_vector(
@@ -92,9 +93,68 @@ class NLPController(BaseController):
             limit=limit
         )
         if not search_results:
-            return False
+            return None
 
 
-        return json.loads(
-            json.dumps(search_results, default=lambda x: x.__dict__)
+        return search_results
+
+
+    def answer_rag_query(self, project: Project, query: str, limit: int = 10):
+
+        answer, full_prompt, chat_history = None, None, None
+        
+        # step1: retrieve related chunks from vector db
+        retrieved_chunks = self.search_vector_db_collection(
+            project=project,
+            text=query,
+            limit=limit
         )
+
+        if not retrieved_chunks:
+            return answer, full_prompt, chat_history
+
+
+        # step2: construct prompt for generation client (LLM)
+        system_prompt = self.template_parser.get_prompts(group="rag", key="system_prompt")
+
+        document_prompts = "\n".join([
+            self.template_parser.get_prompts(
+                group="rag",
+                key="document_prompt",
+                vars={
+                    "doc_number": idx,
+                    "doc_content": chunk.text
+                }
+            )
+            for idx, chunk in enumerate(retrieved_chunks, 1)
+        ])
+
+        footer_prompt = self.template_parser.get_prompts(
+            group="rag",
+            key="footer_prompt",
+            vars={
+                "query": query
+            }
+        )
+
+
+        chat_history = [
+            self.generation_client.construct_prompt(
+                prompt=system_prompt, 
+                role=self.generation_client.enums.SYSTEM.value
+            )
+        ]
+
+        full_prompt = "\n\n".join([
+            document_prompts,
+            footer_prompt
+        ])
+
+        # step3: call generation client (LLM) to get the answer
+        answer = self.generation_client.generate_text(
+            prompt=full_prompt,
+            chat_history=chat_history
+        )
+
+        return answer, full_prompt, chat_history
+    

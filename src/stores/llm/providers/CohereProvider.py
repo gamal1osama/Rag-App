@@ -29,6 +29,8 @@ class CohereProvider(LLMInterface):
         self.client = cohere.Client(api_key=self.api_key)
 
         self.logger = logging.getLogger(__name__)
+
+        self.enums = CohereEnums
     
 
     
@@ -101,7 +103,7 @@ class CohereProvider(LLMInterface):
             self.logger.error("Error While fetching embedding from Cohere API.")
             return None
 
-        return response.embeddings.float[0] # need to verify is this response.embeddings.float[0]
+        return response.embeddings.float[0] 
     
 
 
