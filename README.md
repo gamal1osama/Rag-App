@@ -189,6 +189,8 @@ Docker provides two services:
 Use it for local development:
 
 ```bash
+cp docker/.env.example docker/.env
+# edit docker/.env to set credentials
 docker compose -f docker/docker-compose.yml up -d
 ```
 
