@@ -13,3 +13,10 @@ conda create -n mini-rag python=3.8 -y
 conda activate mini-rag
 ```
 
+- Install Dependencies
+```bash
+sudo apt update
+sudo apt install libpq-dev gcc python3-dev
+pip install -r requirements.txt
+```
+
