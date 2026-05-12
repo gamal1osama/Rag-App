@@ -23,7 +23,7 @@ nlp_router = APIRouter(
 
 
 @nlp_router.post("/index/push/{project_id}")
-async def index_project(project_id: str, request: Request, push_request: PushRequest):
+async def index_project(project_id: int, request: Request, push_request: PushRequest):
     
 
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
@@ -93,7 +93,7 @@ async def index_project(project_id: str, request: Request, push_request: PushReq
 
 
 @nlp_router.get("/index/info/{project_id}")
-async def get_project_index_info(project_id: str, request: Request):
+async def get_project_index_info(project_id: int, request: Request):
     
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     project = await project_model.get_project_or_create(project_id=project_id)
@@ -118,7 +118,7 @@ async def get_project_index_info(project_id: str, request: Request):
 
 
 @nlp_router.post("/index/search/{project_id}")
-async def search_index(project_id: str, request: Request, search_request: SearchRequest):
+async def search_index(project_id: int, request: Request, search_request: SearchRequest):
     
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     project = await project_model.get_project_or_create(project_id=project_id)
@@ -154,7 +154,7 @@ async def search_index(project_id: str, request: Request, search_request: Search
 
 
 @nlp_router.post("/index/answer/{project_id}")
-async def answer_query(project_id: str, request: Request, search_request: SearchRequest):
+async def answer_query(project_id: int, request: Request, search_request: SearchRequest):
     
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     project = await project_model.get_project_or_create(project_id=project_id)
