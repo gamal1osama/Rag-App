@@ -12,15 +12,18 @@ import json
 
 class PGVectorProvider(VectorDBInterface):
     
-    def __init__(self, db_client, default_vector_size: int=786, distance_method: str=None):
+    def __init__(self, db_client, default_vector_size: int=786, distance_method: str=None, index_threshold: int=100):
 
         self.db_client = db_client
         self.default_vector_size = default_vector_size
         self.distance_method = distance_method
+        self.index_threshold = index_threshold
 
         self.pgvector_table_prefix = PgVectorTableScemaEnums._PREFIX.value
 
         self.logger = logging.getLogger(__name__)
+
+        self.default_index_name = lambda collection_name: f"{collection_name}_vector_idx"
 
 
     async def connect(self):
@@ -111,13 +114,13 @@ class PGVectorProvider(VectorDBInterface):
             async with self.db_client() as session:
                 async with session.begin():
                     create_tb1 = sql_text(
-                        "CREATE TABLE :collection_name ("
-                        f"{PgVectorTableScemaEnums.ID.value} bigserial PRIMARY KEY,"
-                        f"{PgVectorTableScemaEnums.TEXT.value} text,"
+                        "CREATE TABLE :collection_name ( "
+                        f"{PgVectorTableScemaEnums.ID.value} bigserial PRIMARY KEY, "
+                        f"{PgVectorTableScemaEnums.TEXT.value} text, "
                         f"{PgVectorTableScemaEnums.VECTOR.value} vector(:embedding_size), "
-                        f"{PgVectorTableScemaEnums.METADATA.value} jsonb DEFAULT '{{}}',"
-                        f"{PgVectorTableScemaEnums.CHUNK_ID.value} integer,"
-                        f"FOREIGN KEY ({PgVectorTableScemaEnums.CHUNK_ID.value}) REFERENCES chunks(chunk_id)"
+                        f"{PgVectorTableScemaEnums.METADATA.value} jsonb DEFAULT '{{}}', "
+                        f"{PgVectorTableScemaEnums.CHUNK_ID.value} integer, "
+                        f"FOREIGN KEY ({PgVectorTableScemaEnums.CHUNK_ID.value}) REFERENCES chunks(chunk_id) "
                         ")"
                     )
                     await session.execute(create_tb1, {"collection_name": collection_name, "embedding_size": embedding_size})
@@ -127,6 +130,69 @@ class PGVectorProvider(VectorDBInterface):
         
         return False            
     
+
+    async def is_index_existed(self, collection_name: str) -> bool:
+        index_name = self.default_index_name(collection_name)
+        async with self.db_client() as session:
+            async with session.begin():
+                index_check_sql = sql_text("""
+                                           SELECT 1
+                                           FROM pg_indexes
+                                           WHERE tablename = :collection_name AND indexname = :index_name
+                                           """)
+                result = await session.execute(index_check_sql, {"collection_name": collection_name, "index_name": index_name})
+                return bool(result.scalar_one_or_none())
+            
+
+    async def create_vector_index(self, collection_name: str, index_type: str = PgVectorIndexTypeEnums.HNSW.value) -> bool:
+        
+        if not await self.is_collection_exists(collection_name):
+            self.logger.error(f"Collection (table) {collection_name} does not exist. Cannot create index.")
+            return False
+        
+        async with self.db_client() as session:
+            async with session.begin():
+                count_sql = sql_text(f"SELECT COUNT(*) FROM :collection_name")
+                result = await session.execute(count_sql, {"collection_name": collection_name})
+                record_count = result.scalar_one()
+
+                if record_count < self.index_threshold:
+                    return False
+
+                self.logger.info(f"Creating vector index on collection (table) {collection_name} with index type {index_type}...")
+
+                index_name = self.default_index_name(collection_name)
+                create_index_sql = sql_text(
+                    "CREATE INDEX :index_name ON :collection_name "
+                    f"USING {index_type} ({PgVectorTableScemaEnums.VECTOR.value} {self.distance_method})"
+                )
+                await session.execute(create_index_sql, {"index_name": index_name, "collection_name": collection_name})
+                await session.commit()
+
+
+                self.logger.info(f"End: Created vector index on collection (table) {collection_name} with index type {index_type}...")        
+
+        return True
+    
+
+
+    async def reset_vector_index(self, collection_name: str, index_type: str = PgVectorIndexTypeEnums.HNSW.value) -> bool:
+        
+        index_name = self.default_index_name(collection_name)
+        async with self.db_client() as session:
+            async with session.begin():
+                self.logger.info(f"Resetting vector index on collection (table) {collection_name} with index type {index_type}...")
+
+                drop_index_sql = sql_text("DROP INDEX IF EXISTS :index_name")
+                await session.execute(drop_index_sql, {"index_name": index_name})
+                await session.commit()
+
+                ret = await self.create_vector_index(collection_name, index_type)
+
+                self.logger.info(f"End: Reset vector index on collection (table) {collection_name} with index type {index_type}...")
+
+        return ret
+
 
     async def insert_one(self, collection_name: str, 
                          text: str, 
@@ -146,7 +212,7 @@ class PGVectorProvider(VectorDBInterface):
             async with session.begin():
                 insert_sql = sql_text(
                     "INSERT INTO :collection_name "
-                    f"({PgVectorTableScemaEnums.TEXT.value}, {PgVectorTableScemaEnums.VECTOR.value}, {PgVectorTableScemaEnums.METADATA.value}, {PgVectorTableScemaEnums.CHUNK_ID.value})"
+                    f"({PgVectorTableScemaEnums.TEXT.value}, {PgVectorTableScemaEnums.VECTOR.value}, {PgVectorTableScemaEnums.METADATA.value}, {PgVectorTableScemaEnums.CHUNK_ID.value}) "
                     f"VALUES (:text, :vector, :metadata, :chunk_id)"
                 )
 
@@ -205,7 +271,7 @@ class PGVectorProvider(VectorDBInterface):
                         f"({PgVectorTableScemaEnums.TEXT.value}, "
                         f"{PgVectorTableScemaEnums.VECTOR.value}, "
                         f"{PgVectorTableScemaEnums.METADATA.value}, "
-                        f"{PgVectorTableScemaEnums.CHUNK_ID.value})"
+                        f"{PgVectorTableScemaEnums.CHUNK_ID.value}) "
                         "VALUES (:text, :vector, :metadata, :chunk_id)"
                     ) 
 
