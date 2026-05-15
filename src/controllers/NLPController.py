@@ -46,10 +46,7 @@ class NLPController(BaseController):
         texts = [chunk.chunk_text for chunk in chunks]
         metadatas = [chunk.chunk_metadata for chunk in chunks]
 
-        vectors = [
-            self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.DOCUMENT.value) 
-            for text in texts
-        ]
+        vectors =  await self.embedding_client.embed_text(text=texts, document_type=DocumentTypeEnums.DOCUMENT.value) 
 
 
         # step 3: create collection if not exists
@@ -80,9 +77,14 @@ class NLPController(BaseController):
 
         # step1: get collection name
         collection_name = self.create_collection_name(project_id=project.project_id)
+        query_vector = None
 
         # step2: get the text embedding vector
-        query_vector = await self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
+        query_vectors = await self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
+        
+        if isinstance(query_vectors, list) and len(query_vectors) > 0:
+            query_vector = query_vectors[0]
+    
         if not query_vector:
             return None
 
