@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     VECTOR_DB_BACKEND: str
     VECTOR_DB_PATH: str
     VECTOR_DB_DISTANCE_METHOD: str=None
-    VECTOR_DB_PGVEC_INDEX_THREADS: int=100
+    VECTOR_DB_PGVEC_INDEX_THRESHOLD: int=100
 
 
     PRIMARY_LANGUAGE: str="english"
