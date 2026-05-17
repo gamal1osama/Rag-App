@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from .schemas.nlp import PushRequest, SearchRequest
 from models import ProjectModel, ChunkModel, ResponseSignal
 from controllers import NLPController
+from tqdm.auto import tqdm
 
 import logging
 
@@ -49,7 +50,20 @@ async def index_project(project_id: int, request: Request, push_request: PushReq
 
 
     chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
+
+
+    # create collection if not exists
+    collection_name = nlp_controller.create_collection_name(project_id=project.project_id)
+
+    _ = await request.app.vector_db_client.create_collection(collection_name=collection_name, 
+                                                             embedding_size=request.app.embedding_client.embedding_size, 
+                                                             do_reset=push_request.do_reset)
     
+    # setup batching
+    total_chunks_count = await chunk_model.get_total_chunks_count(project_id=project.project_id)
+    pbar = tqdm(total=total_chunks_count, desc="Indexing chunks into vector DB", position=0)
+
+
     has_records, page_no, inserted_items_cnt, idx = True, 1, 0, 0
     while has_records:
         page_chunks = await chunk_model.get_project_chunks(
@@ -81,6 +95,7 @@ async def index_project(project_id: int, request: Request, push_request: PushReq
                 }
             )
         
+        pbar.update(len(page_chunks))
         inserted_items_cnt += len(page_chunks)
     
     return JSONResponse(
