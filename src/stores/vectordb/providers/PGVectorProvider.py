@@ -316,7 +316,7 @@ class PGVectorProvider(VectorDBInterface):
                 search_sql = sql_text(
                     "SELECT "
                     f"{PgVectorTableScemaEnums.TEXT.value} as text, "
-                    f"1 - ({PgVectorTableScemaEnums.VECTOR.value} <-> :query_vector) as score, "
+                    f"1 - ({PgVectorTableScemaEnums.VECTOR.value} <-> :query_vector) as score "
                     f"FROM {collection_name} "
                     "ORDER BY score DESC "
                     "LIMIT :limit"
@@ -327,7 +327,7 @@ class PGVectorProvider(VectorDBInterface):
                     "limit": limit
                 })
 
-                records = await results.fetchall()
+                records = results.fetchall()
 
         return [
             RetrievedDataChunk(
