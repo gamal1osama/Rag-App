@@ -2,6 +2,8 @@ from .BaseController import BaseController
 from stores.llm.LLMEnums import DocumentTypeEnums
 from models.db_schemas import Project, DataChunk
 from typing import List
+import asyncio
+from cohere.errors import TooManyRequestsError
 import json
 
 
@@ -46,7 +48,12 @@ class NLPController(BaseController):
         texts = [chunk.chunk_text for chunk in chunks]
         metadatas = [chunk.chunk_metadata for chunk in chunks]
 
-        vectors =  self.embedding_client.embed_text(text=texts, document_type=DocumentTypeEnums.DOCUMENT.value) 
+        while True:
+            try:
+                vectors = self.embedding_client.embed_text(text=texts, document_type=DocumentTypeEnums.DOCUMENT.value)
+                break
+            except TooManyRequestsError:
+                await asyncio.sleep(60)
 
 
         # step 3: create collection if not exists
@@ -80,7 +87,12 @@ class NLPController(BaseController):
         query_vector = None
 
         # step2: get the text embedding vector
-        query_vectors = await self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
+        while True:
+            try:
+                query_vectors = self.embedding_client.embed_text(text=text, document_type=DocumentTypeEnums.QUERY.value)
+                break
+            except TooManyRequestsError:
+                await asyncio.sleep(60)
         
         if isinstance(query_vectors, list) and len(query_vectors) > 0:
             query_vector = query_vectors[0]

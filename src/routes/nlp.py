@@ -5,7 +5,6 @@ from .schemas.nlp import PushRequest, SearchRequest
 from models import ProjectModel, ChunkModel, ResponseSignal
 from controllers import NLPController
 from tqdm.auto import tqdm
-import asyncio
 
 import logging
 
@@ -66,7 +65,6 @@ async def index_project(project_id: int, request: Request, push_request: PushReq
 
 
     has_records, page_no, inserted_items_cnt, idx = True, 1, 0, 0
-    pause_seconds = 30
     while has_records:
         page_chunks = await chunk_model.get_project_chunks(
             project_id=project.project_id, 
@@ -98,7 +96,6 @@ async def index_project(project_id: int, request: Request, push_request: PushReq
         
         pbar.update(len(page_chunks))
         inserted_items_cnt += len(page_chunks)
-        await asyncio.sleep(pause_seconds)
     
     return JSONResponse(
         status_code=status.HTTP_200_OK,
