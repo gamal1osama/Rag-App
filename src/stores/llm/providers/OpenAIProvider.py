@@ -33,7 +33,7 @@ class OpenAIProvider(LLMInterface):
             base_url=self.base_url if (self.base_url and len(self.base_url)) else None
         )
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("uvicorn.error")
 
         self.enums = OpenAIEnums
         
