@@ -59,7 +59,7 @@ class QdrantDBProvider(VectorDBInterface):
         
         if not await self.is_collection_exists(collection_name):
             self.logger.info(f"Creating Qdrant collection {collection_name} with embedding size {embedding_size} and distance method {self.distance_method}...")
-            _ = await self.client.recreate_collection(
+            _ = self.client.recreate_collection(
                 collection_name=collection_name,
                 vectors_config=models.VectorParams(size=embedding_size, distance=self.distance_method)
             )
