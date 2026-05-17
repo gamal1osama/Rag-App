@@ -138,9 +138,9 @@ class PGVectorProvider(VectorDBInterface):
                 index_check_sql = sql_text(f"""
                                            SELECT 1
                                            FROM pg_indexes
-                                           WHERE tablename = {collection_name} AND indexname = {index_name}
+                                           WHERE tablename = :collection_name AND indexname = :index_name
                                            """)
-                result = await session.execute(index_check_sql)
+                result = await session.execute(index_check_sql, {"collection_name": collection_name, "index_name": index_name})
                 return bool(result.scalar_one_or_none())
             
 
@@ -225,6 +225,8 @@ class PGVectorProvider(VectorDBInterface):
                 })
                 await session.commit()
 
+        await self.create_vector_index(collection_name=collection_name)
+
         return True
     
 
@@ -278,6 +280,8 @@ class PGVectorProvider(VectorDBInterface):
 
                     await session.execute(batch_insert_sql, values)
                 await session.commit()
+        
+        await self.create_vector_index(collection_name=collection_name)
 
         return True
     
