@@ -1,6 +1,6 @@
-# Docker Setup for Production RAG Application
+# Docker Setup for Production RAG System
 
-This directory contains the Docker setup for the Rag App System, including all necessary services for development and monitoring.
+This directory contains the Docker setup for the Production RAG System, including all necessary services for development and monitoring.
 
 ## Services
 
@@ -26,11 +26,14 @@ cp .env.example.app .env.app
 cp .env.example.postgres .env.postgres
 cp .env.example.grafana .env.grafana
 cp .env.example.postgres-exporter .env.postgres-exporter
+```
 
+```bash
 # Setup the Alembic configuration for the FastAPI application
 cd ..
 cd docker/ragsys
 cp alembic.example.ini alembic.ini
+```
 
 ### 2. Start the services
 

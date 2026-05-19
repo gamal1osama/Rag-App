@@ -1,6 +1,6 @@
-# Alembic Usage (RAG App System)
+# Alembic Usage (Production RAG System)
 
-This folder contains the Alembic config and migration scripts for the Rag App System database schema.
+This folder contains the Alembic config and migration scripts for the Production RAG System database schema.
 
 This guide focuses on the exact workflow used in this repository and common recovery steps when
 Alembic autogenerate does not behave as expected.

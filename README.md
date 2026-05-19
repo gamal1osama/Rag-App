@@ -1,6 +1,6 @@
-# Rag App System 
+# Production RAG System 
 
- Rag App System is a compact, production-minded Retrieval-Augmented Generation (RAG) service built with FastAPI. It supports document upload, chunking, vector indexing, semantic search, and answer generation using configurable LLM and vector backends.
+Production RAG System is a compact, production-minded Retrieval-Augmented Generation (RAG) service built with FastAPI. It supports document upload, chunking, vector indexing, semantic search, and answer generation using configurable LLM and vector backends.
 
 This README is intentionally long and explicit. It documents how each part of the codebase works, the project flow, technologies used, design patterns, and how the architecture supports a database migration with minimal refactoring.
 
@@ -200,8 +200,14 @@ Docker provides two services:
 Use it for local development:
 
 ```bash
-cp docker/.env.example docker/.env
-# edit docker/.env to set credentials
+# create docker env files
+cd docker/env
+cp .env.example.app .env.app
+cp .env.example.postgres .env.postgres
+cp .env.example.grafana .env.grafana
+cp .env.example.postgres-exporter .env.postgres-exporter
+
+cd ..
 docker compose -f docker/docker-compose.yml up -d
 ```
 
@@ -220,7 +226,7 @@ src/models/db_schemas/ragsys/
 Quick start:
 
 ```bash
-cd src/models/db_schemas/rsgys
+cd src/models/db_schemas/ragsys
 cp alembic.ini.example alembic.ini
 
 # edit alembic.ini to set sqlalchemy.url
@@ -248,7 +254,8 @@ APP_NAME, APP_VERSION
 POSTGRES_HOST, POSTGRES_PORT, POSTGRES_MAIN_DB, POSTGRES_USER, POSTGRES_PASSWORD
 GENERATION_BACKEND, EMBEDDING_BACKEND
 OPENAI_API_KEY, COHERE_API_KEY
-VECTOR_DB_BACKEND, VECTOR_DB_PATH, VECTOR_DB_DISTANCE_METHOD
+VECTOR_DB_BACKEND_LITERALS, VECTOR_DB_BACKEND, VECTOR_DB_PATH, VECTOR_DB_DISTANCE_METHOD
+VECTOR_DB_PGVEC_INDEX_THRESHOLD
 ```
 
 ---
