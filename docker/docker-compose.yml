@@ -1,48 +1,44 @@
 services:
-  mongodb:
-    image: mongo:8.3.1 
 
-    container_name: mongodb
+  # FastAPI application
 
-    ports:
-      - "27017:27017"
 
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    
-    volumes:
-      - mongodb:/data/db
+  # Nginx Service
 
-    networks:
-      - backend
 
-    restart: always
-
-  
+  # PostgreSQL Service (PGVector)
   pgvector:
     image: pgvector/pgvector:0.8.2-pg18-trixie
-
     container_name: pgvector
-
     ports:
       - "5432:5432"
-
     volumes:
       - pgvector_data:/var/lib/postgresql
-    
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
+    env_file:
+      - ./env/.env.postgres
     networks:
       - backend
-    
     restart: always
+    healthcheck:
+      test: ["CMD_SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Qdrant Service
 
 
-networks:
-  backend:
+  # Prometheus Monitoring 
 
-volumes:
-  mongodb:
-  pgvector_data:
+
+  # Grafana Dashboard
+
+
+  # Node Exporter for system Metrics
+
+
+  # PostgreSQL Exporter for Postgres Metrics
+  
