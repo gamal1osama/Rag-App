@@ -110,6 +110,30 @@ services:
 
 
   # Node Exporter for system Metrics
+  node_exporter:
+
+    image: prom/node-exporter:v1.11.1
+
+    container_name: node-exporter
+
+    ports:
+      - "9100:9100"
+
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+
+    command: 
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-excluded=^/(sys|proc|dev|host|etc)($$|/)'
+
+    networks:
+      - backend
+
+    restart: always
 
 
   # PostgreSQL Exporter for Postgres Metrics
