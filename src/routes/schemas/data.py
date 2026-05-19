@@ -3,8 +3,8 @@ from typing import Optional
 
 
 class ProcessRequest(BaseModel):
-    file_id: str = None
-    
+    file_id: Optional[int] = None
+
     chunk_size: Optional[int] = 100
     chunk_overlap: Optional[int] = 20
 

@@ -79,7 +79,7 @@ async def upload_data(request: Request, project_id: int, file: UploadFile,
         status_code=status.HTTP_200_OK, # that is the default U can delete it
         content={
             "signal":ResponseSignal.FILE_UPLOADED_SUCCESSFULLY.value,
-            "file_id": str(asset_record.asset_id),
+            "file_id": asset_record.asset_id
         }
     )
 
@@ -105,8 +105,8 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
     project_files_ids = {}
 
     if process_request.file_id is not None:
-        asset_record = await asset_model.get_asset_record(
-            asset_project_id=project.project_id, asset_name=process_request.file_id
+        asset_record = await asset_model.get_asset_record_by_id(
+            asset_project_id=project.project_id, asset_id=process_request.file_id
         )
 
         if asset_record is None:
