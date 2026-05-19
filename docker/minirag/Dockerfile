@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libavif-dev pkg-config \
     libjpeg-dev \
     gcc unzip zip \
+    libpq-dev \
     python3-dev \
     libxml2-dev \
     libxslt1-dev \
@@ -21,7 +22,7 @@ RUN uv pip install -r requirements.txt --system
 
 COPY src/ .
 
-RUN mkdir -p  models/db_schemas/minirag
+RUN mkdir -p  /app/models/db_schemas/minirag/
 
 COPY docker/minirag/alembic.ini /app/models/db_schemas/minirag/alembic.ini
 
