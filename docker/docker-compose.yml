@@ -85,6 +85,28 @@ services:
 
 
   # Grafana Dashboard
+  grafana:
+
+    image: grafana/grafana:13.0.1-security-01-ubuntu
+
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+    env_file:
+      - ./env/.env.grafana
+
+    depends_on:
+      - prometheus
+
+    networks:
+      - backend
+
+    restart: always
 
 
   # Node Exporter for system Metrics
