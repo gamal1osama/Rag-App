@@ -8,19 +8,28 @@ services:
 
   # PostgreSQL Service (PGVector)
   pgvector:
+
     image: pgvector/pgvector:0.8.2-pg18-trixie
+  
     container_name: pgvector
+  
     ports:
       - "5432:5432"
+  
     volumes:
       - pgvector_data:/var/lib/postgresql
+  
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  
     env_file:
       - ./env/.env.postgres
+  
     networks:
       - backend
+  
     restart: always
+  
     healthcheck:
       test: ["CMD_SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
@@ -29,7 +38,7 @@ services:
       start_period: 10s
 
   # Qdrant Service
-
+  
 
   # Prometheus Monitoring 
 
@@ -41,4 +50,22 @@ services:
 
 
   # PostgreSQL Exporter for Postgres Metrics
+  postgres_exporter:
   
+    image: prometheuscommunity/postgres-exporter:v0.19.1
+  
+    container_name: postgres-exporter
+  
+    ports:
+      - "9187:9187"
+  
+    env_file:
+      - ./env/.env.postgres-exporter
+  
+    depends_on:
+      - pgvector
+
+    networks:
+      - backend
+
+    restart: always
