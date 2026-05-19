@@ -38,7 +38,24 @@ services:
       start_period: 10s
 
   # Qdrant Service
-  
+  qdrant:
+
+    image: qdrant/qdrant:v1.18
+
+    container_name: qdrant
+
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+    networks:
+      - backend
+
+    restart: always
+    
 
   # Prometheus Monitoring 
 
