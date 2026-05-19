@@ -1,4 +1,4 @@
-APP_NAME="mini-RAG"
+APP_NAME="Production-RAG-System"
 APP_VERSION="0.1"
 
 FILE_ALLOWED_TYPES=["text/plain", "application/pdf"]
