@@ -1,6 +1,6 @@
-# MiniRAG
+# Production RAG System 
 
-MiniRAG is a compact, production-minded Retrieval-Augmented Generation (RAG) service built with FastAPI. It supports document upload, chunking, vector indexing, semantic search, and answer generation using configurable LLM and vector backends.
+Production RAG System is a compact, production-minded Retrieval-Augmented Generation (RAG) service built with FastAPI. It supports document upload, chunking, vector indexing, semantic search, and answer generation using configurable LLM and vector backends.
 
 This README is intentionally long and explicit. It documents how each part of the codebase works, the project flow, technologies used, design patterns, and how the architecture supports a database migration with minimal refactoring.
 
@@ -44,7 +44,7 @@ src/
 - **[src/models/ProjectModel.py](src/models/ProjectModel.py)**: CRUD for projects.
 - **[src/models/AssetModel.py](src/models/AssetModel.py)**: file asset records.
 - **[src/models/ChunkModel.py](src/models/ChunkModel.py)**: chunk records + pagination.
-- **[src/models/db_schemas/minirag/schemas](src/models/db_schemas/minirag/schemas)**: SQLAlchemy tables.
+- **[src/models/db_schemas/ragsys/schemas](src/models/db_schemas/ragsys/schemas)**: SQLAlchemy tables.
 
 ### Stores (External Services)
 - **LLM providers:** OpenAI, Cohere via **[LLMProviderFactory](src/stores/llm/LLMProviderFactory.py)**.
@@ -200,8 +200,14 @@ Docker provides two services:
 Use it for local development:
 
 ```bash
-cp docker/.env.example docker/.env
-# edit docker/.env to set credentials
+# create docker env files
+cd docker/env
+cp .env.example.app .env.app
+cp .env.example.postgres .env.postgres
+cp .env.example.grafana .env.grafana
+cp .env.example.postgres-exporter .env.postgres-exporter
+
+cd ..
 docker compose -f docker/docker-compose.yml up -d
 ```
 
@@ -214,13 +220,13 @@ If you only use Postgres, MongoDB can be disabled.
 Alembic lives under:
 
 ```
-src/models/db_schemas/minirag/
+src/models/db_schemas/ragsys/
 ```
 
 Quick start:
 
 ```bash
-cd src/models/db_schemas/minirag
+cd src/models/db_schemas/ragsys
 cp alembic.ini.example alembic.ini
 
 # edit alembic.ini to set sqlalchemy.url
@@ -233,7 +239,7 @@ Key points:
 - `alembic/env.py` loads `SQLAlchemyBase.metadata` for autogenerate.
 
 For the detailed Alembic workflow and troubleshooting notes, see
-[src/models/db_schemas/minirag/README.md](src/models/db_schemas/minirag/README.md).
+[src/models/db_schemas/ragsys/README.md](src/models/db_schemas/ragsys/README.md).
 
 ---
 
@@ -248,7 +254,8 @@ APP_NAME, APP_VERSION
 POSTGRES_HOST, POSTGRES_PORT, POSTGRES_MAIN_DB, POSTGRES_USER, POSTGRES_PASSWORD
 GENERATION_BACKEND, EMBEDDING_BACKEND
 OPENAI_API_KEY, COHERE_API_KEY
-VECTOR_DB_BACKEND, VECTOR_DB_PATH, VECTOR_DB_DISTANCE_METHOD
+VECTOR_DB_BACKEND_LITERALS, VECTOR_DB_BACKEND, VECTOR_DB_PATH, VECTOR_DB_DISTANCE_METHOD
+VECTOR_DB_PGVEC_INDEX_THRESHOLD
 ```
 
 ---

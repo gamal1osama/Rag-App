@@ -6,7 +6,7 @@ FILE_MAX_SIZE=10 # in MB
 FILE_DEFAULT_CHUNK_SIZE=512 # in KB
 
 #=============================PostgresDB Configuration=============================
-POSTGRES_HOST="localhost"
+POSTGRES_HOST="pgvector"
 POSTGRES_PORT=5432
 POSTGRES_MAIN_DB="ragsys"
 POSTGRES_USER="postgres"
